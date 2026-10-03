@@ -1,0 +1,146 @@
+# XIAO Garage Door: DRY CONTACT + REED SWITCH (old / "dumb" opener, real open/closed status)
+#
+# Wiring (PCB or perfboard):
+#   OPENER terminal RED (slot 1) -> wall-button "+" terminal on the opener
+#   OPENER terminal WHT (slot 2) -> wall-button common terminal
+#   SENSORS CLOSED -> reed switch that closes when the door is fully CLOSED, other wire -> SENSORS GND
+#   SENSORS OPEN   -> (optional) reed switch that closes when the door is fully OPEN, other wire -> GND
+#
+# Open/Close only press the button when the door isn't already there, so the state can't drift.
+
+substitutions:
+  name: garage-door
+  friendly_name: Garage Door
+  travel_time: 13s
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: jamessilvia20.xiao-garage-door-dry-contact-sensor
+    version: "1.0.0"
+
+dashboard_import:
+  package_import_url: github://JamesSilvia20/xiao-garage-door/firmware/garage-dry-contact-sensor.yaml@main
+  import_full_config: false
+
+esp32:
+  board: seeed_xiao_esp32c6
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+logger:
+
+# Home Assistant API. Add `encryption: key: ...` if you want an encrypted connection.
+api:
+
+ota:
+  - platform: esphome
+
+# No Wi-Fi password is baked in. After flashing, set Wi-Fi from the browser installer (Improv),
+# or join the "<name> Setup" hotspot it creates and pick your network.
+wifi:
+  ap:
+    ssid: "${friendly_name} Setup"
+
+captive_portal:
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal
+    update_interval: 120s
+    entity_category: diagnostic
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      entity_category: diagnostic
+
+switch:
+  # XIAO ESP32-C6 antenna switch: GPIO3 low powers the RF switch, GPIO14 low selects the
+  # built-in ceramic antenna. Without this the Wi-Fi range is noticeably worse.
+  - platform: gpio
+    pin: GPIO3
+    id: rf_switch_power
+    restore_mode: ALWAYS_OFF
+    internal: true
+  - platform: gpio
+    pin: GPIO14
+    id: antenna_select
+    restore_mode: ALWAYS_OFF
+    internal: true
+  - platform: gpio
+    pin: GPIO2
+    id: door_relay
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+binary_sensor:
+  - platform: gpio
+    id: closed_switch
+    name: Closed Sensor
+    entity_category: diagnostic
+    pin:
+      number: GPIO22          # D4 = SENSORS "CLOSED"
+      mode: INPUT_PULLUP
+      inverted: true          # reed switch shorts to GND = ON = door closed
+    filters:
+      - delayed_on_off: 200ms
+    on_state:
+      - cover.template.publish:
+          id: garage_door
+          state: !lambda 'return x ? COVER_CLOSED : COVER_OPEN;'
+  - platform: gpio
+    id: open_switch
+    name: Open Sensor
+    entity_category: diagnostic
+    pin:
+      number: GPIO1           # D1 = SENSORS "OPEN" (optional; leave unconnected if unused)
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on_off: 200ms
+
+script:
+  - id: press
+    mode: single
+    then:
+      - switch.turn_on: door_relay
+      - delay: 500ms
+      - switch.turn_off: door_relay
+
+cover:
+  - platform: template
+    name: Door
+    id: garage_door
+    device_class: garage
+    lambda: 'return id(closed_switch).state ? COVER_CLOSED : COVER_OPEN;'
+    open_action:
+      - if:
+          condition:
+            binary_sensor.is_on: closed_switch
+          then:
+            - script.execute: press
+    close_action:
+      - if:
+          condition:
+            binary_sensor.is_off: closed_switch
+          then:
+            - script.execute: press
+    stop_action:
+      - script.execute: press
+
+button:
+  - platform: template
+    name: Press Wall Button
+    icon: mdi:gesture-tap-button
+    on_press:
+      - script.execute: press

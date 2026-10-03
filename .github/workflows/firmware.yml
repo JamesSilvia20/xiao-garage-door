@@ -1,0 +1,19 @@
+name: Firmware compiles
+on:
+  push:
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  pull_request:
+    paths: ["firmware/**"]
+  workflow_dispatch:
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [garage-secplus2, garage-secplus1, garage-dry-contact, garage-dry-contact-sensor]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: esphome/build-action@v7
+        with:
+          yaml-file: firmware/${{ matrix.config }}.yaml

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <title>XIAO Garage Door circuit</title>
+  <rect width="1000" height="760" rx="16" fill="#ffffff"/>
+  <defs>
+    <g id="gnd"><path d="M-10 0h20M-6 5h12M-2 10h4" stroke="#222" stroke-width="2" fill="none"/></g>
+  </defs>
+  <style>
+    .w{stroke:#222;stroke-width:2;fill:none}
+    .part{fill:#fff7e0;stroke:#b26a00;stroke-width:2}
+    .q{fill:#e8eaf6;stroke:#3f51b5;stroke-width:2}
+    .xiao{fill:#e8f5e9;stroke:#2e7d32;stroke-width:2}
+    .term{fill:#e3f2fd;stroke:#1565c0;stroke-width:2}
+    .h{font-weight:bold;font-size:16px;fill:#1a237e}
+    .s{font-size:12px;fill:#444}
+    .b{font-weight:bold}
+  </style>
+
+  <!-- XIAO -->
+  <rect class="xiao" x="25" y="60" width="160" height="640" rx="10"/>
+  <text class="b" x="105" y="88" text-anchor="middle" font-size="16">XIAO ESP32-C6</text>
+  <text class="s" x="105" y="106" text-anchor="middle">plugs into the board</text>
+  <text class="b" x="175" y="150" text-anchor="end">D2 · GPIO2</text>
+  <text class="b" x="175" y="320" text-anchor="end">D3 · GPIO21</text>
+  <text class="b" x="175" y="480" text-anchor="end">D5 · GPIO23</text>
+  <text class="b" x="175" y="600" text-anchor="end">D4 · GPIO22</text>
+  <text class="b" x="175" y="670" text-anchor="end">D1 · GPIO1</text>
+
+  <!-- ===== 1. SEND ===== -->
+  <text class="h" x="215" y="80">1 · SEND: “press” the button / talk to the opener</text>
+  <path class="w" d="M185 145 H440"/>
+  <path class="w" d="M300 145 V165"/><rect class="part" x="291" y="165" width="18" height="40"/><path class="w" d="M300 205 V220"/><use href="#gnd" x="300" y="220"/>
+  <text class="s" x="318" y="190">R1 10k (keeps Q1 off at boot)</text>
+  <rect class="q" x="440" y="115" width="180" height="60" rx="6"/>
+  <text class="b" x="530" y="140" text-anchor="middle">Q1 AO3400A</text>
+  <text class="s" x="530" y="160" text-anchor="middle">gate ← D2, source → GND</text>
+  <path class="w" d="M530 175 V210"/><use href="#gnd" x="530" y="210"/>
+  <path class="w" d="M620 145 H860"/>
+  <text class="s" x="630" y="135">drain → RED (D2 high pulls RED low)</text>
+
+  <!-- ===== 2. RECEIVE ===== -->
+  <text class="h" x="215" y="260">2 · RECEIVE (Security+ openers only)</text>
+  <path class="w" d="M185 315 H440"/>
+  <path class="w" d="M300 315 V295"/><rect class="part" x="291" y="275" width="18" height="20"/><text class="s" x="318" y="290">R2 10k to 3V3</text>
+  <rect class="q" x="440" y="285" width="180" height="60" rx="6"/>
+  <text class="b" x="530" y="310" text-anchor="middle">Q2 2N7002</text>
+  <text class="s" x="530" y="330" text-anchor="middle">drain → D3, source → GND</text>
+  <path class="w" d="M530 345 V380"/><use href="#gnd" x="530" y="380"/>
+  <path class="w" d="M620 315 H680"/>
+  <text class="s" x="624" y="305">gate</text>
+  <path class="w" d="M650 315 V340"/><rect class="part" x="641" y="340" width="18" height="30"/><path class="w" d="M650 370 V385"/><use href="#gnd" x="650" y="385"/><text class="s" x="665" y="362">R4 100k</text>
+  <rect class="part" x="680" y="306" width="50" height="18"/><text class="s" x="686" y="300">R3 1k</text>
+  <path class="w" d="M730 315 H780 V145"/>
+  <circle cx="780" cy="145" r="5" fill="#222"/>
+  <text class="s" x="640" y="240">Q2 listens to RED →</text>
+
+  <!-- ===== 3. OBSTRUCTION ===== -->
+  <text class="h" x="215" y="430">3 · OBSTRUCTION (Security+ openers only)</text>
+  <path class="w" d="M185 475 H600"/>
+  <path class="w" d="M300 475 V490"/><rect class="part" x="291" y="490" width="18" height="30"/><path class="w" d="M300 520 V530"/><use href="#gnd" x="300" y="530"/><text class="s" x="318" y="512">R6 10k</text>
+  <rect class="part" x="600" y="466" width="50" height="18"/><text class="s" x="606" y="460">R5 10k</text>
+  <path class="w" d="M650 475 H860"/>
+  <text class="s" x="665" y="500">halves it to ≤ 3.3 V</text>
+
+  <!-- ===== 4. SENSORS ===== -->
+  <text class="h" x="215" y="565">4 · DOOR SENSORS (optional reed switches)</text>
+  <path class="w" d="M185 595 H600"/>
+  <rect class="part" x="600" y="586" width="50" height="18"/><text class="s" x="606" y="580">R9 1k</text>
+  <path class="w" d="M650 595 H860"/>
+  <text class="s" x="215" y="620">+ R7 10k to 3V3 and C1 100nF to GND on the D4 side</text>
+  <path class="w" d="M185 665 H600"/>
+  <rect class="part" x="600" y="656" width="50" height="18"/><text class="s" x="606" y="650">R10 1k</text>
+  <path class="w" d="M650 665 H860"/>
+  <text class="s" x="215" y="690">+ R8 10k to 3V3 and C2 100nF to GND on the D1 side</text>
+
+  <!-- Terminals -->
+  <text class="b" x="920" y="100" text-anchor="middle" font-size="16">OPENER</text>
+  <rect class="term" x="860" y="110" width="120" height="390" rx="8"/>
+  <text x="920" y="150" text-anchor="middle" class="b" fill="#c62828">RED</text>
+  <text x="920" y="300" text-anchor="middle" class="b">WHT = GND</text>
+  <text x="920" y="480" text-anchor="middle" class="b">BLK</text>
+  <text class="b" x="920" y="555" text-anchor="middle" font-size="16">SENSORS</text>
+  <rect class="term" x="860" y="565" width="120" height="135" rx="8"/>
+  <text x="920" y="600" text-anchor="middle" class="b">CLOSED</text>
+  <text x="920" y="670" text-anchor="middle" class="b">OPEN</text>
+  <text x="920" y="690" text-anchor="middle" class="s">+ GND</text>
+
+  <text x="25" y="735" class="s">All grounds are joined: XIAO GND = OPENER WHT = SENSORS GND.  Dry-contact (dumb) openers use only RED (button +) and WHT (button common).</text>
+</svg>

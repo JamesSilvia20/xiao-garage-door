@@ -1,0 +1,100 @@
+# XIAO Garage Door: SECURITY+ 1.0 (LiftMaster / Chamberlain / Craftsman with a PURPLE, RED or ORANGE learn button,
+# roughly 1997-2011, with a wall control that has a light button). Full status from the opener itself: open/closed/opening/closing,
+# light, lock, obstruction, motion. No extra sensors needed.
+#
+# This uses the excellent esphome-ratgdo component (GPL-2.0, https://github.com/ratgdo/esphome-ratgdo)
+# with the pins of this board:
+#   D2 (GPIO2)  -> AO3400A, pulls the RED wire low to send
+#   D3 (GPIO21) <- 2N7002 on the RED wire, receive (inverted)
+#   D5 (GPIO23) <- BLACK wire through a 10k/10k divider (obstruction)
+#   D1 (GPIO1) / D4 (GPIO22) = SENSORS OPEN / CLOSED terminals, used here as optional
+#                               dry-contact OPEN / CLOSE trigger inputs (pull to GND).
+#
+# Wiring: OPENER terminal RED/WHT/BLK -> the opener's red / white / black wall-control terminals.
+
+substitutions:
+  name: garage-door
+  friendly_name: Garage Door
+  id_prefix: garage
+  uart_tx_pin: GPIO2
+  uart_rx_pin: GPIO21
+  input_obst_pin: GPIO23
+  status_door_pin: GPIO19        # D8: status output (not wired on this board)
+  status_obstruction_pin: GPIO20 # D9: status output (not wired on this board)
+  dry_contact_open_pin: GPIO1    # D1: SENSORS "OPEN" terminal
+  dry_contact_close_pin: GPIO22  # D4: SENSORS "CLOSED" terminal
+  dry_contact_light_pin: GPIO0   # D0: not wired
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  min_version: 2026.4.0
+  project:
+    name: jamessilvia20.xiao-garage-door-secplus1
+    version: "1.0.0"
+
+dashboard_import:
+  package_import_url: github://JamesSilvia20/xiao-garage-door/firmware/garage-secplus1.yaml@main
+  import_full_config: false
+
+packages:
+  ratgdo:
+    url: https://github.com/ratgdo/esphome-ratgdo
+    ref: main
+    files: [base_secplusv1.yaml]
+    refresh: 1d
+
+esp32:
+  board: seeed_xiao_esp32c6
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+logger:
+
+# Home Assistant API. Add `encryption: key: ...` if you want an encrypted connection.
+api:
+
+# No Wi-Fi password is baked in. After flashing, set Wi-Fi from the browser installer (Improv),
+# or join the "<name> Setup" hotspot it creates and pick your network.
+wifi:
+  ap:
+    ssid: "${friendly_name} Setup"
+
+captive_portal:
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal
+    update_interval: 120s
+    entity_category: diagnostic
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      entity_category: diagnostic
+
+switch:
+  # XIAO ESP32-C6 antenna switch: GPIO3 low powers the RF switch, GPIO14 low selects the
+  # built-in ceramic antenna. Without this the Wi-Fi range is noticeably worse.
+  - platform: gpio
+    pin: GPIO3
+    id: rf_switch_power
+    restore_mode: ALWAYS_OFF
+    internal: true
+  - platform: gpio
+    pin: GPIO14
+    id: antenna_select
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time

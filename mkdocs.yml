@@ -1,0 +1,83 @@
+site_name: XIAO Garage Door
+site_description: Make any garage door opener smart with a $5 Seeed XIAO ESP32-C6. Open-source PCB, firmware and beginner tutorials for Home Assistant and Apple Home.
+site_url: https://jamessilvia20.github.io/xiao-garage-door/
+repo_url: https://github.com/JamesSilvia20/xiao-garage-door
+repo_name: JamesSilvia20/xiao-garage-door
+edit_uri: edit/main/docs/
+copyright: MIT licensed. Built on the shoulders of ratgdo and ESPHome.
+
+theme:
+  name: material
+  icon:
+    logo: material/garage-variant
+    repo: fontawesome/brands/github
+  favicon: assets/favicon.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.highlight
+
+markdown_extensions:
+  - github-callouts
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.keys
+  - pymdownx.mark
+
+nav:
+  - Home: index.md
+  - Start here:
+      - Which opener do I have?: start/which-opener.md
+      - Parts and cost: start/parts.md
+      - Safety first: start/safety.md
+  - Get the hardware:
+      - Order the ready-made PCB: hardware/order-pcb.md
+      - Or build it on perfboard: hardware/perfboard.md
+      - Soldering 101: hardware/soldering-101.md
+      - How the circuit works: hardware/circuit.md
+  - Set it up:
+      - Flash the firmware: setup/flash.md
+      - Browser installer: install/index.md
+      - Add to Home Assistant: setup/home-assistant.md
+      - Add to Apple Home: setup/apple-home.md
+      - Install at the opener: setup/install.md
+  - Help:
+      - Troubleshooting: help/troubleshooting.md
+      - FAQ: help/faq.md
+  - For makers:
+      - Edit the PCB: makers/edit-pcb.md
+      - Firmware reference: makers/firmware.md
+      - Credits and license: makers/credits.md

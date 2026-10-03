@@ -1,0 +1,12 @@
+.esphome/
+secrets.yaml
+site/
+__pycache__/
+*.kicad_prl
+*-backups/
+fp-info-cache
+hardware/pcb/source/*.dsn
+hardware/pcb/source/*.ses
+hardware/pcb/source/fr.log
+hardware/pcb/source/drc.json
+.DS_Store

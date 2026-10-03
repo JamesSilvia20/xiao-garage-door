@@ -1,0 +1,18 @@
+{
+  "name": "XIAO Garage Door - Dry contact (simple 2-wire button, no sensor)",
+  "version": "1.0.0",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 20,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C6",
+      "improv": true,
+      "parts": [
+        {
+          "path": "garage-dry-contact.factory.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+# XIAO Garage Door: DRY CONTACT (old / "dumb" opener with a simple 2-wire wall button)
+# No door sensor needed. The door's position is ASSUMED from the last command and travel time.
+#
+# Wiring (PCB or perfboard):
+#   OPENER terminal RED (slot 1) -> wall-button "+" terminal on the opener
+#   OPENER terminal WHT (slot 2) -> wall-button common terminal
+#   XIAO D2 (GPIO2) drives the transistor that "presses" the button for 0.5 s.
+#
+# Got a reed switch? Use garage-dry-contact-sensor.yaml instead for real open/closed status.
+
+substitutions:
+  name: garage-door
+  friendly_name: Garage Door
+  travel_time: 13s          # how long your door takes to fully open (or close); time it once and adjust
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: jamessilvia20.xiao-garage-door-dry-contact
+    version: "1.0.0"
+
+dashboard_import:
+  package_import_url: github://JamesSilvia20/xiao-garage-door/firmware/garage-dry-contact.yaml@main
+  import_full_config: false
+
+esp32:
+  board: seeed_xiao_esp32c6
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+logger:
+
+# Home Assistant API. Add `encryption: key: ...` if you want an encrypted connection.
+api:
+
+ota:
+  - platform: esphome
+
+# No Wi-Fi password is baked in. After flashing, set Wi-Fi from the browser installer (Improv),
+# or join the "<name> Setup" hotspot it creates and pick your network.
+wifi:
+  ap:
+    ssid: "${friendly_name} Setup"
+
+captive_portal:
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal
+    update_interval: 120s
+    entity_category: diagnostic
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      entity_category: diagnostic
+
+switch:
+  # XIAO ESP32-C6 antenna switch: GPIO3 low powers the RF switch, GPIO14 low selects the
+  # built-in ceramic antenna. Without this the Wi-Fi range is noticeably worse.
+  - platform: gpio
+    pin: GPIO3
+    id: rf_switch_power
+    restore_mode: ALWAYS_OFF
+    internal: true
+  - platform: gpio
+    pin: GPIO14
+    id: antenna_select
+    restore_mode: ALWAYS_OFF
+    internal: true
+  # The "finger" on the wall button. Always off at boot; only the press script turns it on.
+  - platform: gpio
+    pin: GPIO2
+    id: door_relay
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+script:
+  - id: press
+    mode: single
+    then:
+      - switch.turn_on: door_relay
+      - delay: 500ms
+      - switch.turn_off: door_relay
+
+cover:
+  # Shows up as a garage door in Home Assistant (and Apple Home via the HomeKit bridge).
+  # Single-button openers cycle open -> stop -> close -> stop, so this only knows the position
+  # by assumption. If someone uses the wall button or a remote, the shown state can be wrong
+  # until the next command from here.
+  - platform: time_based
+    name: Door
+    id: garage_door
+    device_class: garage
+    assumed_state: true
+    has_built_in_endstop: true   # the opener stops itself at the end of travel
+    open_duration: ${travel_time}
+    close_duration: ${travel_time}
+    open_action:
+      - script.execute: press
+    close_action:
+      - script.execute: press
+    stop_action:
+      - script.execute: press
+
+button:
+  # One press of the wall button, with no state tracking (start / stop / reverse).
+  - platform: template
+    name: Press Wall Button
+    icon: mdi:gesture-tap-button
+    on_press:
+      - script.execute: press
